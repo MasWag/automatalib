@@ -16,6 +16,8 @@
 package net.automatalib.modelchecker.ltsmin.monitor;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.function.Function;
 
 import de.learnlib.tooling.annotation.builder.GenerateBuilder;
@@ -33,11 +35,27 @@ import net.automatalib.modelchecker.ltsmin.LTSminIO;
 public class LTSminMonitorIO<I, O> extends AbstractLTSminMonitorMealy<I, O>
         implements LTSminIO<I, O, MealyMachine<?, I, ?, O>> {
 
-    @GenerateBuilder(defaults = BuilderDefaults.class)
+    private final Map<String, ? extends Function<? super O, ?>> outputLabels;
+
     public LTSminMonitorIO(boolean keepFiles,
                            Function<String, I> string2Input,
                            Function<String, O> string2Output,
                            Collection<? super O> skipOutputs) {
+        this(keepFiles, string2Input, string2Output, skipOutputs, Collections.emptyMap());
+    }
+
+    @GenerateBuilder(defaults = BuilderDefaults.class)
+    public LTSminMonitorIO(boolean keepFiles,
+                           Function<String, I> string2Input,
+                           Function<String, O> string2Output,
+                           Collection<? super O> skipOutputs,
+                           Map<String, ? extends Function<? super O, ?>> outputLabels) {
         super(keepFiles, string2Input, string2Output, skipOutputs);
+        this.outputLabels = outputLabels;
+    }
+
+    @Override
+    public Map<String, ? extends Function<? super O, ?>> getOutputLabels() {
+        return outputLabels;
     }
 }

@@ -74,6 +74,12 @@ TOKEN:
 |	< RELEASE: "R" >
 }
 
+TOKEN:
+{
+// output labels (after the keywords, so that keywords take precedence)
+	< OUTPUT_LABEL: ["a"-"z", "A"-"Z", "_"] (["a"-"z", "A"-"Z", "0"-"9", "_"])* >
+}
+
 private void empty():
 {}
 {
@@ -122,7 +128,7 @@ private void letterFormulaHelper():
 private void ioAssignment():
 {}
 {
-	<IO_LABEL> <ASSIGNMENT> <BEGIN_LABEL> (<LABEL>)? <END_LABEL>
+	(<IO_LABEL> | <OUTPUT_LABEL>) <ASSIGNMENT> <BEGIN_LABEL> (<LABEL>)? <END_LABEL>
 }
 
 private void ioAtom():

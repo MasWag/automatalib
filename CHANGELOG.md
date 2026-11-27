@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 [Full changelog](https://github.com/LearnLib/automatalib/compare/automatalib-13.0.0...HEAD)
 
+### Added
+
+* `Mealy2ETFWriterIO#withOutputLabels` and the `LTSmin{LTL,Monitor}IO` model checkers now support additional output labels (edge labels computed from transition outputs) which may be referenced in formulae. This allows to specify properties over parts of structured outputs without enumerating all matching outputs.
+
 ### Changed
 
 * `NearLinearEquivalenceTest` no longer supports the `ignoreUndefinedTransitions` option. The flag is incompatible with the underlying algorithm and the previous implementation may have missed separating words iff the flag was set to `true`.

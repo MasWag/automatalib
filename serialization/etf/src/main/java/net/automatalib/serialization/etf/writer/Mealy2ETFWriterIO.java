@@ -17,8 +17,12 @@ package net.automatalib.serialization.etf.writer;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import net.automatalib.alphabet.Alphabet;
 import net.automatalib.automaton.concept.StateIDs;
@@ -33,14 +37,20 @@ import net.automatalib.common.util.IOUtil;
  */
 public final class Mealy2ETFWriterIO<I, O> extends AbstractETFWriter<I, MealyMachine<?, I, ?, O>> {
 
-    private static final Mealy2ETFWriterIO<?, ?> INSTANCE = new Mealy2ETFWriterIO<>();
+    private static final Pattern LABEL_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
 
-    private Mealy2ETFWriterIO() {
-        // prevent instantiation
+    private static final Set<String> RESERVED_LABEL_NAMES = Set.of("id", "input", "output", "letter");
+
+    private static final Mealy2ETFWriterIO<?, ?> INSTANCE = new Mealy2ETFWriterIO<>(Collections.emptyMap());
+
+    private final Map<String, ? extends Function<? super O, ?>> outputLabels;
+
+    private Mealy2ETFWriterIO(Map<String, ? extends Function<? super O, ?>> outputLabels) {
+        this.outputLabels = outputLabels;
     }
 
     /**
-     * Write the edge type. An edge has two edge labels: input of type input, and output of type output.
+     * Write the edge type. An edge has three edge labels: input, output, and the output labels.
      *
      * @param pw the Writer.
      */
@@ -49,6 +59,9 @@ public final class Mealy2ETFWriterIO<I, O> extends AbstractETFWriter<I, MealyMac
         pw.println("begin edge");
         pw.println("input:input");
         pw.println("output:output");
+        for (String label : outputLabels.keySet()) {
+            pw.printf("%s:%s%n", label, label);
+        }
         pw.println("end edge");
     }
 
@@ -60,7 +73,8 @@ public final class Mealy2ETFWriterIO<I, O> extends AbstractETFWriter<I, MealyMac
      *  - the valuations for the state ids,
      *  - the transitions,
      *  - the input alphabet (for the input labels on edges),
-     *  - the output alphabet (for the output labels on edges).
+     *  - the output alphabet (for the output labels on edges),
+     *  - the values of each output label.
      *
      * @param pw the Writer.
      * @param mealy the Mealy machine to write.
@@ -90,6 +104,10 @@ public final class Mealy2ETFWriterIO<I, O> extends AbstractETFWriter<I, MealyMac
         // create a new (insertion stable) map that contains indices for the output alphabet
         final Map<O, Integer> outputIndices = new LinkedHashMap<>();
 
+        // the same for the values of each output label
+        final Map<String, Map<String, Integer>> labelIndices = new LinkedHashMap<>();
+        outputLabels.keySet().forEach(l -> labelIndices.put(l, new LinkedHashMap<>()));
+
         // write the transitions
         pw.println("begin trans");
         for (S s : mealy.getStates()) {
@@ -99,11 +117,17 @@ public final class Mealy2ETFWriterIO<I, O> extends AbstractETFWriter<I, MealyMac
                     final O o = mealy.getTransitionOutput(t);
                     outputIndices.computeIfAbsent(o, ii -> outputIndices.size());
                     final S n = mealy.getSuccessor(t);
-                    pw.printf("%s/%s %d %d%n",
+                    pw.printf("%s/%s %d %d",
                               stateIDs.getStateId(s),
                               stateIDs.getStateId(n),
                               inputs.getSymbolIndex(i),
                               outputIndices.get(o));
+                    for (Map.Entry<String, ? extends Function<? super O, ?>> e : outputLabels.entrySet()) {
+                        final Map<String, Integer> indices = labelIndices.get(e.getKey());
+                        final String value = String.valueOf(e.getValue().apply(o));
+                        pw.printf(" %d", indices.computeIfAbsent(value, v -> indices.size()));
+                    }
+                    pw.println();
                 }
             }
         }
@@ -120,6 +144,15 @@ public final class Mealy2ETFWriterIO<I, O> extends AbstractETFWriter<I, MealyMac
             pw.printf("\"%s\"%n", o);
         }
         pw.println("end sort");
+
+        // write the values of each output label
+        for (Map.Entry<String, Map<String, Integer>> e : labelIndices.entrySet()) {
+            pw.printf("begin sort %s%n", e.getKey());
+            for (String value : e.getValue().keySet()) {
+                pw.printf("\"%s\"%n", value);
+            }
+            pw.println("end sort");
+        }
     }
 
     @Override
@@ -132,5 +165,31 @@ public final class Mealy2ETFWriterIO<I, O> extends AbstractETFWriter<I, MealyMac
     @SuppressWarnings("unchecked")
     public static <I, O> Mealy2ETFWriterIO<I, O> getInstance() {
         return (Mealy2ETFWriterIO<I, O>) INSTANCE;
+    }
+
+    /**
+     * Returns a writer that adds an edge label {@code l} with value {@code f(o)} for each entry {@code (l, f)} of the
+     * given map, where {@code o} is the output of the transition. Formulae may refer to these labels, e.g.,
+     * {@code l == "v"}.
+     *
+     * @param outputLabels
+     *         the output labels
+     * @param <I>
+     *         input symbol type
+     * @param <O>
+     *         output symbol type
+     *
+     * @return the writer
+     *
+     * @throws IllegalArgumentException
+     *         if a label is not an identifier or is a reserved name
+     */
+    public static <I, O> Mealy2ETFWriterIO<I, O> withOutputLabels(Map<String, ? extends Function<? super O, ?>> outputLabels) {
+        for (String label : outputLabels.keySet()) {
+            if (!LABEL_NAME.matcher(label).matches() || RESERVED_LABEL_NAMES.contains(label)) {
+                throw new IllegalArgumentException("Illegal name of an output label: '" + label + '\'');
+            }
+        }
+        return new Mealy2ETFWriterIO<>(outputLabels);
     }
 }

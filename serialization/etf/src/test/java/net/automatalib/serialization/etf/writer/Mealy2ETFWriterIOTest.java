@@ -19,13 +19,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 
 import net.automatalib.alphabet.Alphabet;
 import net.automatalib.alphabet.impl.Alphabets;
 import net.automatalib.automaton.transducer.MealyMachine;
+import net.automatalib.automaton.transducer.impl.CompactMealy;
 import net.automatalib.common.util.IOUtil;
 import net.automatalib.common.util.io.UnclosableOutputStream;
+import net.automatalib.util.automaton.builder.AutomatonBuilders;
 import net.automatalib.util.automaton.random.RandomAutomata;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -62,5 +67,38 @@ public class Mealy2ETFWriterIOTest {
 
         Mealy2ETFWriterIO.<Character, Character>getInstance()
                          .writeModel(new UnclosableOutputStream(OutputStream.nullOutputStream()), automaton, alphabet);
+    }
+
+    @Test
+    public void testWriteOutputLabels() throws Exception {
+        try (Reader r = IOUtil.asBufferedUTF8Reader(Mealy2ETFWriterIOTest.class.getResourceAsStream(
+                "/IO-testWriteOutputLabels.etf")); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            final Alphabet<Character> alphabet = Alphabets.characters('a', 'b');
+            final MealyMachine<?, Character, ?, String> automaton =
+                    AutomatonBuilders.forMealy(new CompactMealy<Character, String>(alphabet))
+                                     .withInitial("q0")
+                                     .from("q0").on('a').withOutput("xa").to("q1")
+                                     .from("q0").on('b').withOutput("xb").loop()
+                                     .from("q1").on('a').withOutput("yb").loop()
+                                     .create();
+            final Map<String, Function<String, Character>> labels = new LinkedHashMap<>();
+            labels.put("o_0", o -> o.charAt(0));
+            labels.put("o_1", o -> o.charAt(1));
+
+            Mealy2ETFWriterIO.<Character, String>withOutputLabels(labels).writeModel(baos, automaton, alphabet);
+
+            final String expected = IOUtil.toString(r);
+
+            Assert.assertEquals(baos.toString(StandardCharsets.UTF_8), expected);
+        }
+    }
+
+    @Test
+    public void testIllegalOutputLabels() {
+        for (String label : new String[] {"output", "input", "id", "letter", "1st", "a-b", "a b", ""}) {
+            Assert.assertThrows(IllegalArgumentException.class,
+                                () -> Mealy2ETFWriterIO.withOutputLabels(Map.of(label, Function.identity())));
+        }
     }
 }

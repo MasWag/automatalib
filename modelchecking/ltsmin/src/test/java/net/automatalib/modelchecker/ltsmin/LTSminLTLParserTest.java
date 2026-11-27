@@ -36,6 +36,10 @@ public class LTSminLTLParserTest {
         formulae.add(new Object[] {"!([] ((letter == \"1\")) && <> (letter == \"2\"))", true});
         formulae.add(new Object[] {"![] letter == \"1 && <> letter == \"2\")", false});
         formulae.add(new Object[] {"![] letter == 1 && <> letter == \"2\")", false});
+        formulae.add(new Object[] {"[] (o_1 == \"1\")", false});
+        // like LTSmin, read keywords followed by letters as identifiers
+        formulae.add(new Object[] {"X letter == \"a\"", true});
+        formulae.add(new Object[] {"Xletter == \"a\"", false});
 
         return formulae.toArray(new Object[formulae.size()][]);
     }
@@ -52,6 +56,17 @@ public class LTSminLTLParserTest {
         formulae.add(new Object[] {"output == \"output with \\\" quotes\"", true});
         // test non-ascii labels
         formulae.add(new Object[] {"input == \"привет\" R output == \"عالم\"", true});
+        // test output labels
+        formulae.add(new Object[] {"[] (o_1 == \"a\" -> X (glucose2 == \"b\" U input == \"c\"))", true});
+        formulae.add(new Object[] {"X _o == \"a\" R !(o_1 == \"\")", true});
+        formulae.add(new Object[] {"o_1 == \"a\" && true", true});
+        formulae.add(new Object[] {"1o == \"a\"", false});
+        formulae.add(new Object[] {"o-1 == \"a\"", false});
+        formulae.add(new Object[] {"o_1 == a", false});
+        // like LTSmin, read keywords followed by letters as identifiers
+        formulae.add(new Object[] {"X input == \"a\"", true});
+        formulae.add(new Object[] {"Xinput == \"a\"", true});
+        formulae.add(new Object[] {"Xinput", false});
 
         return formulae.toArray(new Object[formulae.size()][]);
     }

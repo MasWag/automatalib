@@ -18,6 +18,9 @@ package net.automatalib.modelchecker.ltsmin;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.Function;
 
 import net.automatalib.alphabet.impl.Alphabets;
 import net.automatalib.automaton.transducer.MealyMachine;
@@ -51,6 +54,16 @@ public interface LTSminIO<I, O, R> extends LTSminMealy<I, O, R> {
     @Override
     default void mealy2ETF(MealyMachine<?, I, ?, O> automaton, Collection<? extends I> inputs, File etf)
             throws IOException {
-        Mealy2ETFWriterIO.<I, O>getInstance().writeModel(etf, automaton, Alphabets.fromCollection(inputs));
+        Mealy2ETFWriterIO.<I, O>withOutputLabels(getOutputLabels())
+                         .writeModel(etf, automaton, Alphabets.fromCollection(inputs));
+    }
+
+    /**
+     * Returns the additional output labels of the edges, see {@link Mealy2ETFWriterIO#withOutputLabels(Map)}.
+     *
+     * @return the output labels
+     */
+    default Map<String, ? extends Function<? super O, ?>> getOutputLabels() {
+        return Collections.emptyMap();
     }
 }

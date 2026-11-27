@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import net.automatalib.modelchecker.ltsmin.AbstractLTSmin;
@@ -123,6 +124,10 @@ public abstract class AbstractLTSminLTL<I, A, L extends Lasso<I, ?>> extends Abs
 
         static <O> Collection<? super O> skipOutputs() {
             return Collections.emptyList();
+        }
+
+        static <O> Map<String, ? extends Function<? super O, ?>> outputLabels() {
+            return Collections.emptyMap();
         }
     }
 }

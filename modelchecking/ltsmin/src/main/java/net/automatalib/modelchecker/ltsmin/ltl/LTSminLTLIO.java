@@ -16,6 +16,8 @@
 package net.automatalib.modelchecker.ltsmin.ltl;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.function.Function;
 
 import de.learnlib.tooling.annotation.builder.GenerateBuilder;
@@ -32,13 +34,31 @@ import net.automatalib.modelchecking.Lasso.MealyLasso;
  */
 public class LTSminLTLIO<I, O> extends AbstractLTSminLTLMealy<I, O> implements LTSminIO<I, O, MealyLasso<I, O>> {
 
-    @GenerateBuilder(defaults = BuilderDefaults.class)
+    private final Map<String, ? extends Function<? super O, ?>> outputLabels;
+
     public LTSminLTLIO(boolean keepFiles,
                        Function<String, I> string2Input,
                        Function<String, O> string2Output,
                        int minimumUnfolds,
                        double multiplier,
                        Collection<? super O> skipOutputs) {
+        this(keepFiles, string2Input, string2Output, minimumUnfolds, multiplier, skipOutputs, Collections.emptyMap());
+    }
+
+    @GenerateBuilder(defaults = BuilderDefaults.class)
+    public LTSminLTLIO(boolean keepFiles,
+                       Function<String, I> string2Input,
+                       Function<String, O> string2Output,
+                       int minimumUnfolds,
+                       double multiplier,
+                       Collection<? super O> skipOutputs,
+                       Map<String, ? extends Function<? super O, ?>> outputLabels) {
         super(keepFiles, string2Input, string2Output, minimumUnfolds, multiplier, skipOutputs);
+        this.outputLabels = outputLabels;
+    }
+
+    @Override
+    public Map<String, ? extends Function<? super O, ?>> getOutputLabels() {
+        return outputLabels;
     }
 }

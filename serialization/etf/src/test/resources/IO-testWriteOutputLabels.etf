@@ -1,0 +1,38 @@
+begin state
+id:id
+end state
+begin edge
+input:input
+output:output
+o_0:o_0
+o_1:o_1
+end edge
+begin init
+0
+end init
+begin sort id
+"0"
+"1"
+end sort
+begin trans
+0/1 0 0 0 0
+0/0 1 1 0 1
+1/1 0 2 1 1
+end trans
+begin sort input
+"a"
+"b"
+end sort
+begin sort output
+"xa"
+"xb"
+"yb"
+end sort
+begin sort o_0
+"x"
+"y"
+end sort
+begin sort o_1
+"a"
+"b"
+end sort
