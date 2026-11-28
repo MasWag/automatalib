@@ -16,8 +16,10 @@
 
 open module net.automatalib.example {
 
+    requires info.scce.addlib.core;
     requires java.desktop;
 
+    requires net.automatalib.addlib;
     requires net.automatalib.api;
     requires net.automatalib.brics;
     requires net.automatalib.common.setting;
@@ -26,6 +28,7 @@ open module net.automatalib.example {
     requires net.automatalib.incremental;
     requires net.automatalib.modelchecker.ltsmin;
     requires net.automatalib.modelchecker.m3c;
+    requires net.automatalib.modelchecking.monitor;
     requires net.automatalib.serialization.dot;
     requires net.automatalib.util;
     requires net.automatalib.visualization.dot;

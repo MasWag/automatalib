@@ -32,6 +32,7 @@ import net.automatalib.example.graph.DFSExample;
 import net.automatalib.example.incremental.IncrementalDFAExample;
 import net.automatalib.example.incremental.IncrementalMealyExample;
 import net.automatalib.example.incremental.IncrementalPCDFAExample;
+import net.automatalib.example.modelchecking.BFSMonitorExample;
 import net.automatalib.example.modelchecking.LTSminExample;
 import net.automatalib.example.modelchecking.LTSminMonitorExample;
 import net.automatalib.example.modelchecking.M3CSPAExample;
@@ -110,6 +111,11 @@ public class ExamplesTest {
     public void testIncrementalPCDFAExample() throws InvocationTargetException, InterruptedException {
         requireJVMCompatibility();
         SwingUtilities.invokeAndWait(() -> IncrementalPCDFAExample.main(new String[0]));
+    }
+
+    @Test
+    public void testBFSMonitorExample() {
+        BFSMonitorExample.main(new String[0]);
     }
 
     @Test

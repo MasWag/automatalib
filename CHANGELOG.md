@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+* Added `automata-modelchecking-monitor` with sequential and parallel breadth-first model checkers for DFA and Mealy machine models against prefix-closed DFA properties. Violations are returned as finite counterexamples.
+* Added `automata-addlib` with an ADDLib-backed DFA adapter for guarded transitions, and `NamedBitSet` for proposition valuations.
 * `Mealy2ETFWriterIO#withOutputLabels` and the `LTSmin{LTL,Monitor}IO` model checkers now support additional output labels (edge labels computed from transition outputs) which may be referenced in formulae. This allows to specify properties over parts of structured outputs without enumerating all matching outputs.
 
 ### Changed

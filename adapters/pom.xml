@@ -35,6 +35,7 @@ limitations under the License.
     </description>
 
     <modules>
+        <module>addlib</module>
         <module>brics</module>
     </modules>
 </project>
